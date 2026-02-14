@@ -1,0 +1,76 @@
+name: Update Advisor Data
+
+on:
+  # Run weekly on Mondays at 8am EST (13:00 UTC) during award season (Jan-Apr)
+  schedule:
+    - cron: '0 13 * 1-4 1'
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+    inputs:
+      sources:
+        description: 'Which sources to fetch (all, forbes, barrons, advisorhub, investmentnews)'
+        required: false
+        default: 'all'
+      year:
+        description: 'Override data year (e.g., 2027)'
+        required: false
+        default: ''
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: advisor-data-cache-${{ github.run_id }}
+          restore-keys: |
+            advisor-data-cache-
+
+      - name: Run update script
+        env:
+          DATA_YEAR: ${{ github.event.inputs.year || '' }}
+        run: |
+          SOURCE_FLAG=""
+          INPUT_SOURCES="${{ github.event.inputs.sources || 'all' }}"
+          if [ "$INPUT_SOURCES" != "all" ] && [ -n "$INPUT_SOURCES" ]; then
+            SOURCE_FLAG="--$INPUT_SOURCES"
+          fi
+          node scripts/update-data.js $SOURCE_FLAG
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet advisor-data.js; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No data changes detected."
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            OLD_SIZE=$(git show HEAD:advisor-data.js 2>/dev/null | wc -c || echo 0)
+            NEW_SIZE=$(wc -c < advisor-data.js)
+            echo "Data file changed: ${OLD_SIZE} -> ${NEW_SIZE} bytes"
+          fi
+
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add advisor-data.js
+          DATE=$(date -u +"%Y-%m-%d")
+          git commit -m "Update advisor data ($DATE)
+
+          Automated data refresh from Forbes/SHOOK, Barron's, AdvisorHub, and InvestmentNews."
+          git push
