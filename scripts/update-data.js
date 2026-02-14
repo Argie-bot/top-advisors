@@ -37,18 +37,45 @@ const FETCH_BARRONS = FETCH_ALL || process.argv.includes('--barrons');
 const FETCH_ADVISORHUB = FETCH_ALL || process.argv.includes('--advisorhub');
 const FETCH_INVESTMENTNEWS = FETCH_ALL || process.argv.includes('--investmentnews');
 
-// Forbes API (paginated JSON)
-const FORBES_API = `https://www.forbes.com/forbesapi/org/wealth-management-teams-best-in-state/${YEAR}/position/true.json`;
+// Forbes/SHOOK API (paginated JSON) — 12 lists across the year
+// Two entity types: "person" (individual advisors) and "org" (teams/firms)
 const FORBES_PAGE_SIZE = 200;
+const FORBES_LISTS = [
+  // January
+  { type: 'org',    slug: 'wealth-management-teams-best-in-state',         listName: 'Best-in-State Teams',                  year: YEAR,      month: 1  },
+  // February
+  { type: 'person', slug: 'top-women-advisors',                            listName: 'Top Women Wealth Advisors',            year: YEAR,      month: 2  },
+  { type: 'person', slug: 'best-in-state-women-advisors',                  listName: 'Best-in-State Women Advisors',         year: YEAR,      month: 2  },
+  // April
+  { type: 'person', slug: 'top-wealth-advisors',                           listName: 'Top 250 Wealth Advisors',              year: YEAR,      month: 4  },
+  { type: 'person', slug: 'best-in-state-wealth-advisors',                 listName: 'Best-in-State Wealth Advisors',        year: YEAR,      month: 4  },
+  // July
+  { type: 'person', slug: 'financial-security-professionals',              listName: 'Top Financial Security Professionals',  year: YEAR,      month: 7  },
+  { type: 'person', slug: 'best-in-state-financial-security-professionals',listName: 'Best-in-State Financial Security',      year: YEAR,      month: 7  },
+  // August
+  { type: 'person', slug: 'next-gen-advisors',                             listName: 'Top Next-Gen Wealth Advisors',         year: YEAR,      month: 8  },
+  { type: 'person', slug: 'next-gen-best-in-state-wealth-advisors',        listName: 'Best-in-State Next-Gen Advisors',      year: YEAR,      month: 8  },
+  // October
+  { type: 'org',    slug: 'top-ria-firms',                                 listName: 'Top RIA Firms',                        year: YEAR,      month: 10 },
+  // November
+  { type: 'org',    slug: 'top-wealth-management-teams-private-wealth',    listName: 'Top WM Teams: Private Wealth',         year: YEAR,      month: 11 },
+  { type: 'org',    slug: 'top-wealth-management-teams-high-net-worth',    listName: 'Top WM Teams: High Net Worth',         year: YEAR,      month: 11 },
+];
 
 // Barron's URLs (HTML with embedded __STATE__ JSON)
 const BARRONS_BASE = 'https://www.barrons.com/advisor/report/top-financial-advisors';
 const BARRONS_LISTS = [
-  { slug: '100',             listName: `Top 100 Advisors ${PREV_YEAR}`,      type: 'individual' },
-  { slug: '1200',            listName: `Top 1200 Advisors ${PREV_YEAR}`,     type: 'individual' },
-  { slug: 'independent/100', listName: `Top 100 Independent ${PREV_YEAR}`,   type: 'individual' },
-  { slug: 'women/100',       listName: `Top 100 Women ${PREV_YEAR}`,         type: 'individual' },
-  { slug: 'private-wealth',  listName: `Top 250 PW Teams ${PREV_YEAR}`,      type: 'teams' },
+  // Core lists (Mar/May)
+  { slug: '100',                  listName: `Top 100 Advisors ${PREV_YEAR}`,                type: 'individual' },
+  { slug: '1200',                 listName: `Top 1200 Advisors ${PREV_YEAR}`,               type: 'individual' },
+  { slug: 'private-wealth',      listName: `Top 250 PW Teams ${PREV_YEAR}`,                type: 'teams' },
+  // Women & Independent (Jul/Sep)
+  { slug: 'women/100',            listName: `Top 100 Women Advisors ${PREV_YEAR}`,          type: 'individual' },
+  { slug: 'independent/100',      listName: `Top 100 Independent Advisors ${PREV_YEAR}`,    type: 'individual' },
+  // Additional lists
+  { slug: 'state',                listName: `Top Advisors by State ${PREV_YEAR}`,           type: 'individual' },
+  { slug: 'institutional/100',    listName: `Top 100 Institutional Consulting ${PREV_YEAR}`,type: 'teams' },
+  { slug: 'ria/100',              listName: `Top 100 RIA Firms ${PREV_YEAR}`,               type: 'individual' },
 ];
 
 // AdvisorHub URLs (HTML with embedded wpDataTables)
@@ -144,100 +171,141 @@ function cacheRead(filename) {
 // 1. FORBES/SHOOK
 // ============================================================
 
-async function fetchForbes() {
-  console.log('\n=== FORBES/SHOOK ===');
-  console.log('API: ' + FORBES_API);
+// Parse QA fields from Forbes API response
+function getQA(entry, question) {
+  if (!entry.qas) return '';
+  const qa = entry.qas.find(function(q) { return q.question === question; });
+  return qa ? qa.answer : '';
+}
 
-  let allTeams = [];
+// Fetch all pages for a single Forbes list
+async function fetchForbesList(listConfig) {
+  const apiBase = `https://www.forbes.com/forbesapi/${listConfig.type}/${listConfig.slug}/${listConfig.year}/position/true.json`;
+  const fullListName = listConfig.listName + ' ' + listConfig.year;
+  process.stdout.write('  [' + listConfig.listName + '] ');
+
+  let allEntries = [];
   let start = 0;
   let pageNum = 0;
 
   while (true) {
-    const url = FORBES_API + '?limit=' + FORBES_PAGE_SIZE + '&start=' + start;
-    process.stdout.write('  Fetching page ' + pageNum + ' (start=' + start + ')... ');
+    const url = apiBase + '?limit=' + FORBES_PAGE_SIZE + '&start=' + start;
 
     const data = await fetchJSON(url);
     if (!data) {
-      console.log('404 — list not yet published for ' + YEAR);
+      console.log('404 — not yet published for ' + listConfig.year);
       return [];
     }
 
-    const teams = data.organizationList ? data.organizationList.organizationsLists : [];
-    console.log(teams.length + ' teams');
+    // Person vs Org response structure
+    let entries;
+    if (listConfig.type === 'person') {
+      entries = data.personList ? data.personList.personsLists : [];
+    } else {
+      entries = data.organizationList ? data.organizationList.organizationsLists : [];
+    }
 
-    if (teams.length === 0) break;
-    allTeams = allTeams.concat(teams);
+    if (entries.length === 0) break;
+    allEntries = allEntries.concat(entries);
 
-    // Cache raw page
-    cacheWrite('forbes_page_' + pageNum + '.json', JSON.stringify(data));
+    cacheWrite('forbes_' + listConfig.slug + '_p' + pageNum + '.json', JSON.stringify(data));
 
     start += FORBES_PAGE_SIZE;
     pageNum++;
-
-    // Safety: max 100 pages (20,000 teams)
-    if (pageNum > 100) break;
+    if (pageNum > 100) break; // safety
   }
 
   // Deduplicate by naturalId
   const seen = new Set();
-  allTeams = allTeams.filter(function(t) {
-    if (seen.has(t.naturalId)) return false;
-    seen.add(t.naturalId);
+  allEntries = allEntries.filter(function(e) {
+    if (seen.has(e.naturalId)) return false;
+    seen.add(e.naturalId);
     return true;
   });
-  console.log('  Unique teams: ' + allTeams.length);
 
-  // Parse QA fields
-  function getQA(team, question) {
-    if (!team.qas) return '';
-    const qa = team.qas.find(function(q) { return q.question === question; });
-    return qa ? qa.answer : '';
-  }
-
-  // Build records (one per group member)
+  // Parse into records
   let records = [];
-  allTeams.forEach(function(team) {
-    const teamName = team.organizationName || '';
-    const firm = team.parentCompany ? team.parentCompany.name : '';
-    const state = team.state || '';
-    const city = team.city || '';
-    const rank = team.industryRanks && team.industryRanks[0] ? team.industryRanks[0].rank : '';
-    const category = team.industryRanks && team.industryRanks[0] ? team.industryRanks[0].industry : '';
-    const teamAssets = getQA(team, 'Team Assets');
-    const minAccount = getQA(team, 'Minimum account size for new business');
-    const typicalNetWorth = getQA(team, 'Typical Net Worth of Relationships');
-    const typicalHousehold = getQA(team, 'Typical size of Household accounts');
+  if (listConfig.type === 'person') {
+    // Individual advisor records
+    allEntries.forEach(function(person) {
+      records.push({
+        name: person.personName || (person.firstName + ' ' + person.lastName) || '',
+        teamName: '',
+        firm: person.organization || '',
+        state: person.state || '',
+        city: person.city || '',
+        rank: person.position || '',
+        category: person.category || '',
+        teamAssets: getQA(person, 'Team Assets'),
+        minAccount: getQA(person, 'Minimum account size for new business'),
+        typicalNetWorth: getQA(person, 'Typical Net Worth of Relationships'),
+        typicalHousehold: getQA(person, 'Typical size of Household accounts'),
+        publication: 'Forbes/SHOOK',
+        list: fullListName,
+        clientTypes: ''
+      });
+    });
+  } else {
+    // Org/team records — expand groupMembers into individual rows
+    allEntries.forEach(function(team) {
+      const teamName = team.organizationName || '';
+      const firm = team.parentCompany ? team.parentCompany.name : '';
+      const state = team.state || '';
+      const city = team.city || '';
+      const rank = team.industryRanks && team.industryRanks[0] ? team.industryRanks[0].rank : '';
+      const category = team.industryRanks && team.industryRanks[0] ? team.industryRanks[0].industry : '';
+      const teamAssets = getQA(team, 'Team Assets');
+      const minAccount = getQA(team, 'Minimum account size for new business');
+      const typicalNetWorth = getQA(team, 'Typical Net Worth of Relationships');
+      const typicalHousehold = getQA(team, 'Typical size of Household accounts');
 
-    const members = team.groupMembers || [];
-    if (members.length > 0) {
-      members.forEach(function(member) {
+      const members = team.groupMembers || [];
+      if (members.length > 0) {
+        members.forEach(function(member) {
+          records.push({
+            name: member.name,
+            teamName: teamName,
+            firm: firm, state: state, city: city,
+            rank: rank, category: category, teamAssets: teamAssets,
+            minAccount: minAccount, typicalNetWorth: typicalNetWorth, typicalHousehold: typicalHousehold,
+            publication: 'Forbes/SHOOK',
+            list: fullListName,
+            clientTypes: ''
+          });
+        });
+      } else {
+        // RIA firms and some teams don't list individual members
         records.push({
-          name: member.name,
+          name: team.ceoName || teamName,
           teamName: teamName,
-          firm: firm, state: state, city: city,
+          firm: firm || teamName,
+          state: state, city: city,
           rank: rank, category: category, teamAssets: teamAssets,
           minAccount: minAccount, typicalNetWorth: typicalNetWorth, typicalHousehold: typicalHousehold,
           publication: 'Forbes/SHOOK',
-          list: 'Best-in-State Teams ' + YEAR,
+          list: fullListName,
           clientTypes: ''
         });
-      });
-    } else {
-      records.push({
-        name: teamName,
-        teamName: teamName,
-        firm: firm, state: state, city: city,
-        rank: rank, category: category, teamAssets: teamAssets,
-        minAccount: minAccount, typicalNetWorth: typicalNetWorth, typicalHousehold: typicalHousehold,
-        publication: 'Forbes/SHOOK',
-        list: 'Best-in-State Teams ' + YEAR,
-        clientTypes: ''
-      });
-    }
-  });
+      }
+    });
+  }
 
-  console.log('  Individual records: ' + records.length);
+  console.log(allEntries.length + ' entries → ' + records.length + ' records');
   return records;
+}
+
+async function fetchForbes() {
+  console.log('\n=== FORBES/SHOOK (' + FORBES_LISTS.length + ' lists) ===');
+
+  let allRecords = [];
+  for (const listConfig of FORBES_LISTS) {
+    const records = await fetchForbesList(listConfig);
+    allRecords = allRecords.concat(records);
+  }
+
+  console.log('  Forbes/SHOOK total: ' + allRecords.length + ' records across ' +
+    new Set(allRecords.map(function(r) { return r.list; })).size + ' lists');
+  return allRecords;
 }
 
 // ============================================================
@@ -245,7 +313,7 @@ async function fetchForbes() {
 // ============================================================
 
 function parseBarronsIndividual(html, listName) {
-  const regex = /"data":\[(\{"202[456] Rank".*?\})\]/g;
+  const regex = /"data":\[(\{"20\d{2} Rank".*?\})\]/g;
   let records = [];
   let m;
   while ((m = regex.exec(html)) !== null) {
@@ -253,10 +321,11 @@ function parseBarronsIndividual(html, listName) {
       const arr = JSON.parse('[' + m[1] + ']');
       arr.forEach(function(r) {
         // Advisor name is in HTML link: <a href="...">Name</a>
-        const nameMatch = r.Advisor ? r.Advisor.match(/>([^<]+)</) : null;
+        const nameField = r.Advisor || r.Name || r['Advisor Name'] || '';
+        const nameMatch = nameField.match(/>([^<]+)</) ;
         const rankKey = Object.keys(r).find(function(k) { return k.match(/^\d{4} Rank$/); });
         records.push({
-          name: nameMatch ? nameMatch[1] : (r.Advisor || ''),
+          name: nameMatch ? nameMatch[1] : nameField.replace(/<[^>]+>/g, '').trim(),
           teamName: '',
           firm: r.Firm || '',
           state: expandState(r.State || ''),
@@ -278,7 +347,7 @@ function parseBarronsIndividual(html, listName) {
 }
 
 function parseBarronsTeams(html, listName) {
-  const regex = /"data":\[(\{"202[456] Rank".*?\})\]/g;
+  const regex = /"data":\[(\{"20\d{2} Rank".*?\})\]/g;
   let records = [];
   let m;
   while ((m = regex.exec(html)) !== null) {

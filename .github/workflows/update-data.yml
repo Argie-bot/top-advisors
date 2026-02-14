@@ -1,9 +1,11 @@
 name: Update Advisor Data
 
 on:
-  # Run weekly on Mondays at 8am EST (13:00 UTC) during award season (Jan-Apr)
+  # Run weekly on Mondays at 8am EST (13:00 UTC) during full award season (Jan-Nov)
+  # Forbes/SHOOK publishes 12 lists: Jan, Feb, Apr, Jul, Aug, Oct, Nov
+  # Barron's: Mar, May, Jul, Sep | AdvisorHub: Apr, Jun
   schedule:
-    - cron: '0 13 * 1-4 1'
+    - cron: '0 13 * 1-11 1'
   # Allow manual trigger from GitHub Actions UI
   workflow_dispatch:
     inputs:
@@ -53,7 +55,7 @@ jobs:
       - name: Check for changes
         id: changes
         run: |
-          if git diff --quiet advisor-data.js; then
+          if git diff --quiet advisor-data.js data/; then
             echo "changed=false" >> $GITHUB_OUTPUT
             echo "No data changes detected."
           else
@@ -68,9 +70,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add advisor-data.js
+          git add advisor-data.js data/
           DATE=$(date -u +"%Y-%m-%d")
           git commit -m "Update advisor data ($DATE)
 
-          Automated data refresh from Forbes/SHOOK, Barron's, AdvisorHub, and InvestmentNews."
+          Automated data refresh from Forbes/SHOOK (12 lists), Barron's, AdvisorHub, and InvestmentNews."
           git push
