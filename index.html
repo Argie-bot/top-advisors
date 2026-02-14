@@ -14,37 +14,34 @@
 --emerald:#34d399;--rose:#fb7185;--amber:#fbbf24;
 --glass:rgba(255,255,255,0.03);--glass-border:rgba(255,255,255,0.06);
 --radius:8px;--radius-lg:12px;--radius-xl:16px;
+--pub-forbes:rgba(212,148,42,0.12);--pub-forbes-text:var(--gold-300);--pub-forbes-border:rgba(212,148,42,0.2);
+--pub-barrons:rgba(0,123,189,0.12);--pub-barrons-text:#7cc4eb;--pub-barrons-border:rgba(0,123,189,0.2);
+--pub-advisorhub:rgba(139,92,246,0.12);--pub-advisorhub-text:#b89eff;--pub-advisorhub-border:rgba(139,92,246,0.2);
+--pub-in:rgba(239,68,68,0.1);--pub-in-text:#f87171;--pub-in-border:rgba(239,68,68,0.2);
 }
 html{scroll-behavior:smooth}
 body{font-family:'DM Sans',sans-serif;background:var(--navy-950);color:var(--slate-300);min-height:100vh;overflow-x:hidden;line-height:1.6}
 body::before{content:'';position:fixed;inset:0;opacity:0.015;z-index:0;pointer-events:none;
 background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 body::after{content:'';position:fixed;top:-30%;right:-20%;width:60vw;height:60vw;background:radial-gradient(ellipse,rgba(212,148,42,0.04) 0%,transparent 70%);pointer-events:none;z-index:0}
-
-.app{position:relative;z-index:1;max-width:1680px;margin:0 auto;padding:0 24px 80px}
-
-/* Loading */
+.app{position:relative;z-index:1;max-width:1800px;margin:0 auto;padding:0 24px 80px}
 .loading-overlay{position:fixed;inset:0;background:var(--navy-950);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 0.5s}
 .loading-overlay.hidden{opacity:0;pointer-events:none}
 .loading-spinner{width:40px;height:40px;border:3px solid var(--navy-700);border-top-color:var(--gold-400);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--slate-400);letter-spacing:1px}
-
-/* Header */
 .header{padding:48px 0 40px;border-bottom:1px solid var(--glass-border);margin-bottom:40px;position:relative}
 .header::after{content:'';position:absolute;bottom:-1px;left:0;width:200px;height:1px;background:linear-gradient(90deg,var(--gold-400),transparent)}
 .header-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:var(--gold-400);margin-bottom:16px;display:flex;align-items:center;gap:12px}
 .header-eyebrow::before{content:'';display:inline-block;width:24px;height:1px;background:var(--gold-400)}
 .header h1{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,5vw,56px);font-weight:300;color:var(--slate-50);letter-spacing:-0.5px;line-height:1.1;margin-bottom:12px}
 .header h1 strong{font-weight:600;background:linear-gradient(135deg,var(--gold-300),var(--gold-500));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.header-sub{font-size:15px;color:var(--slate-400);max-width:680px;line-height:1.7}
-.header-meta{display:flex;gap:24px;margin-top:20px;flex-wrap:wrap}
+.header-sub{font-size:15px;color:var(--slate-400);max-width:780px;line-height:1.7}
+.header-meta{display:flex;gap:16px;margin-top:20px;flex-wrap:wrap}
 .header-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:var(--glass);border:1px solid var(--glass-border);border-radius:100px;font-size:12px;font-weight:500;color:var(--slate-300)}
 .header-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--gold-400);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-
-/* Stats */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:32px}
 .stat-card{background:linear-gradient(135deg,var(--navy-800),var(--navy-900));border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:24px;position:relative;overflow:hidden;transition:border-color 0.3s}
 .stat-card:hover{border-color:rgba(212,148,42,0.2)}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold-400),transparent);opacity:0;transition:opacity 0.3s}
@@ -52,8 +49,6 @@ body::after{content:'';position:fixed;top:-30%;right:-20%;width:60vw;height:60vw
 .stat-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--slate-500);margin-bottom:8px}
 .stat-value{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:var(--slate-50)}
 .stat-detail{font-size:12px;color:var(--slate-500);margin-top:4px}
-
-/* Upload */
 .upload-section{background:linear-gradient(135deg,rgba(212,148,42,0.03),rgba(212,148,42,0.01));border:1px dashed rgba(212,148,42,0.2);border-radius:var(--radius-lg);padding:24px;margin-bottom:32px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;transition:all 0.3s}
 .upload-section:hover{border-color:rgba(212,148,42,0.4);background:linear-gradient(135deg,rgba(212,148,42,0.05),rgba(212,148,42,0.02))}
 .upload-icon{width:48px;height:48px;border-radius:var(--radius);background:rgba(212,148,42,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -74,18 +69,14 @@ body::after{content:'';position:fixed;top:-30%;right:-20%;width:60vw;height:60vw
 .match-count{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--emerald);padding:6px 12px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.15);border-radius:100px;display:none;align-items:center;gap:6px}
 .match-count.visible{display:inline-flex}
 .match-count .dot{width:6px;height:6px;border-radius:50%;background:var(--emerald)}
-
-/* Controls */
 .controls{display:flex;flex-direction:column;gap:16px;margin-bottom:32px}
 .controls-row{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch}
-.control-group{flex:1;min-width:180px}
+.control-group{flex:1;min-width:160px}
 .control-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--slate-500);margin-bottom:6px;display:block}
 .control-input,.control-select{width:100%;padding:10px 14px;background:var(--navy-800);border:1px solid var(--glass-border);border-radius:var(--radius);color:var(--slate-200);font-family:'DM Sans',sans-serif;font-size:14px;transition:all 0.2s;outline:none}
 .control-input:focus,.control-select:focus{border-color:var(--gold-400);box-shadow:0 0 0 3px rgba(212,148,42,0.1)}
 .control-select option{background:var(--navy-800);color:var(--slate-200)}
 .control-input::placeholder{color:var(--slate-600)}
-
-/* Table */
 .table-wrapper{background:var(--navy-900);border:1px solid var(--glass-border);border-radius:var(--radius-xl);overflow:hidden;margin-bottom:24px}
 .table-toolbar{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--glass-border);flex-wrap:wrap;gap:12px}
 .table-toolbar-left{font-size:13px;color:var(--slate-400)}
@@ -109,37 +100,32 @@ tbody td{padding:9px 14px;color:var(--slate-300);vertical-align:middle}
 .cell-state{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.5px}
 .cell-rank{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--slate-400)}
 .cell-assets{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate-400)}
-.cell-pub{font-size:11px;padding:3px 10px;border-radius:100px;display:inline-block;font-weight:600;letter-spacing:0.5px;background:rgba(212,148,42,0.1);color:var(--gold-300);border:1px solid rgba(212,148,42,0.15)}
-
-/* Match */
+.pub-badge{font-size:10px;padding:3px 10px;border-radius:100px;display:inline-block;font-weight:600;letter-spacing:0.3px;white-space:nowrap}
+.pub-forbes{background:var(--pub-forbes);color:var(--pub-forbes-text);border:1px solid var(--pub-forbes-border)}
+.pub-barrons{background:var(--pub-barrons);color:var(--pub-barrons-text);border:1px solid var(--pub-barrons-border)}
+.pub-advisorhub{background:var(--pub-advisorhub);color:var(--pub-advisorhub-text);border:1px solid var(--pub-advisorhub-border)}
+.pub-investmentnews{background:var(--pub-in);color:var(--pub-in-text);border:1px solid var(--pub-in-border)}
 tr.matched{background:rgba(52,211,153,0.04) !important}
 tr.matched td:first-child{box-shadow:inset 3px 0 0 var(--emerald)}
 .match-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);border-radius:100px;font-size:10px;font-weight:600;color:var(--emerald);letter-spacing:0.5px;text-transform:uppercase}
 .no-match{color:var(--slate-600);font-size:11px}
-
-/* Pagination */
 .pagination{display:flex;justify-content:center;align-items:center;gap:4px;padding:16px}
 .pagination button{width:36px;height:36px;border-radius:var(--radius);border:1px solid var(--glass-border);background:transparent;color:var(--slate-400);font-size:13px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center}
 .pagination button:hover{background:var(--navy-700);color:var(--slate-200)}
 .pagination button.active{background:var(--gold-400);color:var(--navy-950);border-color:var(--gold-400);font-weight:600}
 .pagination button:disabled{opacity:0.3;cursor:default}
-
 .filter-toggle{display:flex;gap:8px;align-items:center}
 .toggle-btn{padding:6px 14px;border-radius:100px;border:1px solid var(--glass-border);background:transparent;color:var(--slate-400);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s}
 .toggle-btn.active{background:rgba(52,211,153,0.1);border-color:rgba(52,211,153,0.2);color:var(--emerald)}
-
 .footer-note{text-align:center;padding:40px 20px;border-top:1px solid var(--glass-border);margin-top:40px}
-.footer-note p{font-size:12px;color:var(--slate-600);line-height:1.8;max-width:700px;margin:0 auto}
+.footer-note p{font-size:12px;color:var(--slate-600);line-height:1.8;max-width:800px;margin:0 auto}
 .footer-note .ext{color:var(--slate-400);font-weight:500}
-
 .empty-state{text-align:center;padding:60px 20px;color:var(--slate-500)}
 .empty-state p{font-size:14px}
-
 .toast{position:fixed;bottom:24px;right:24px;padding:14px 20px;background:var(--navy-700);border:1px solid var(--glass-border);border-radius:var(--radius);color:var(--slate-200);font-size:13px;z-index:1000;transform:translateY(100px);opacity:0;transition:all 0.3s;box-shadow:0 8px 32px rgba(0,0,0,0.3);display:flex;align-items:center;gap:10px}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.success{border-left:3px solid var(--emerald)}
 .toast.info{border-left:3px solid var(--gold-400)}
-
 @media(max-width:768px){
   .app{padding:0 16px 60px}
   .header{padding:32px 0 24px}
@@ -156,33 +142,35 @@ tr.matched td:first-child{box-shadow:inset 3px 0 0 var(--emerald)}
 .stat-card:nth-child(4){animation-delay:0.15s}
 .stat-card:nth-child(5){animation-delay:0.2s}
 .stat-card:nth-child(6){animation-delay:0.25s}
+.stat-card:nth-child(7){animation-delay:0.3s}
 </style>
 </head>
 <body>
 
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-spinner"></div>
-  <div class="loading-text">Loading 18,345 advisor records...</div>
+  <div class="loading-text">Loading advisor records across 4 publications...</div>
 </div>
 
 <div class="app">
   <header class="header">
     <div class="header-eyebrow">Wealth Management Intelligence Platform</div>
     <h1>Advisor <strong>Recognition</strong> Intelligence</h1>
-    <p class="header-sub">Cross-reference the complete Forbes / SHOOK 2026 Best-in-State Wealth Management Teams list against your advisor and prospect databases for proactive congratulatory outreach.</p>
+    <p class="header-sub">Cross-reference top advisor awards from Forbes/SHOOK, Barron's, AdvisorHub, and InvestmentNews against your advisor and prospect databases for proactive congratulatory outreach and lead generation.</p>
     <div class="header-meta">
-      <span class="header-badge"><span class="dot"></span>Forbes / SHOOK 2026 Best-in-State Teams</span>
-      <span class="header-badge">Published January 2026</span>
-      <span class="header-badge">Data Period: 3/31/24 &ndash; 3/31/25</span>
-      <span class="header-badge">6,150 Teams &bull; 18,345 Individuals</span>
+      <span class="header-badge"><span class="dot"></span>4 Publications</span>
+      <span class="header-badge">13 Award Lists</span>
+      <span class="header-badge">21,500+ Records</span>
+      <span class="header-badge">2025-2026 Data</span>
     </div>
   </header>
 
   <div class="stats-grid" id="statsGrid">
-    <div class="stat-card"><div class="stat-label">Individual Advisors</div><div class="stat-value" id="statTotal">-</div><div class="stat-detail">Parsed from team rosters</div></div>
-    <div class="stat-card"><div class="stat-label">Teams</div><div class="stat-value" id="statTeams">-</div><div class="stat-detail">Ranked teams</div></div>
-    <div class="stat-card"><div class="stat-label">States</div><div class="stat-value" id="statStates">-</div><div class="stat-detail">Including territories</div></div>
-    <div class="stat-card"><div class="stat-label">Firms</div><div class="stat-value" id="statFirms">-</div><div class="stat-detail">Broker-dealers</div></div>
+    <div class="stat-card"><div class="stat-label">Total Records</div><div class="stat-value" id="statTotal">-</div><div class="stat-detail">Across all publications</div></div>
+    <div class="stat-card"><div class="stat-label">Publications</div><div class="stat-value" id="statPubs">-</div><div class="stat-detail">Award sources</div></div>
+    <div class="stat-card"><div class="stat-label">Award Lists</div><div class="stat-value" id="statLists">-</div><div class="stat-detail">Rankings tracked</div></div>
+    <div class="stat-card"><div class="stat-label">States</div><div class="stat-value" id="statStates">-</div><div class="stat-detail">Coverage</div></div>
+    <div class="stat-card"><div class="stat-label">Firms</div><div class="stat-value" id="statFirms">-</div><div class="stat-detail">Companies represented</div></div>
     <div class="stat-card"><div class="stat-label">Matches</div><div class="stat-value" id="statMatches">0</div><div class="stat-detail">Against uploaded list</div></div>
     <div class="stat-card"><div class="stat-label">Filtered</div><div class="stat-value" id="statFiltered">-</div><div class="stat-detail">Currently showing</div></div>
   </div>
@@ -191,7 +179,7 @@ tr.matched td:first-child{box-shadow:inset 3px 0 0 var(--emerald)}
     <div class="upload-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
     <div class="upload-info">
       <h3>Upload Your Advisor / Prospect List</h3>
-      <p>Upload a CSV with a <strong>Name</strong> or <strong>Advisor</strong> column. Fuzzy matching by last name will highlight potential matches. Matching is case-insensitive and ignores punctuation.</p>
+      <p>Upload a CSV with a <strong>Name</strong> or <strong>Advisor</strong> column. Fuzzy matching by last name will highlight potential matches across all publications.</p>
     </div>
     <div class="upload-actions">
       <input type="file" id="csvUpload" class="upload-file-input" accept=".csv">
@@ -204,11 +192,21 @@ tr.matched td:first-child{box-shadow:inset 3px 0 0 var(--emerald)}
   <div class="controls">
     <div class="controls-row">
       <div class="control-group" style="flex:2">
-        <label class="control-label">Search by Name, Team, or City</label>
-        <input type="text" class="control-input" id="searchInput" placeholder="e.g. &ldquo;Smith&rdquo; or &ldquo;Boston&rdquo; or &ldquo;Neuberger&rdquo;">
+        <label class="control-label">Search</label>
+        <input type="text" class="control-input" id="searchInput" placeholder="Search by name, team, firm, or city...">
       </div>
       <div class="control-group">
-        <label class="control-label">Firm / Broker-Dealer</label>
+        <label class="control-label">Publication</label>
+        <select class="control-select" id="pubFilter"><option value="">All Publications</option></select>
+      </div>
+      <div class="control-group">
+        <label class="control-label">Award List</label>
+        <select class="control-select" id="listFilter"><option value="">All Lists</option></select>
+      </div>
+    </div>
+    <div class="controls-row">
+      <div class="control-group">
+        <label class="control-label">Firm</label>
         <select class="control-select" id="firmFilter"><option value="">All Firms</option></select>
       </div>
       <div class="control-group">
@@ -240,9 +238,12 @@ tr.matched td:first-child{box-shadow:inset 3px 0 0 var(--emerald)}
             <th data-col="firm">Firm</th>
             <th data-col="state">State</th>
             <th data-col="city">City</th>
-            <th data-col="stateRank">State Rank</th>
-            <th data-col="category">Category</th>
+            <th data-col="stateRank">Rank</th>
             <th data-col="teamAssets">Team Assets</th>
+            <th data-col="minAccount">Min Account</th>
+            <th data-col="typicalNetWorth">Typical Net Worth</th>
+            <th data-col="publication">Publication</th>
+            <th data-col="list">Award List</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -252,7 +253,7 @@ tr.matched td:first-child{box-shadow:inset 3px 0 0 var(--emerald)}
   </div>
 
   <div class="footer-note">
-    <p>Complete data from the <strong>Forbes / SHOOK 2026 Best-in-State Wealth Management Teams</strong> list (published January 2026). 6,150 teams &bull; 18,345 individual advisors &bull; 55 firms &bull; 42 states + territories. This tool can be extended to include <span class="ext">Barron's</span>, <span class="ext">AdvisorHub</span>, and <span class="ext">InvestmentNews</span> award lists. Rankings and recognition data &copy; Forbes Media LLC / SHOOK Research LLC.</p>
+    <p>Data aggregated from <span class="ext">Forbes / SHOOK</span> (Best-in-State Teams 2026), <span class="ext">Barron's</span> (Top 100, Top 1200, Top 100 Independent, Top 100 Women, Top 250 PW Teams 2025), <span class="ext">AdvisorHub</span> (Advisors to Watch 2025), and <span class="ext">InvestmentNews</span> (Top Independent HNW Advisors, 5-Star Independent Advisors 2025). Rankings and recognition data belong to their respective publishers.</p>
   </div>
 </div>
 
@@ -264,9 +265,9 @@ tr.matched td:first-child{box-shadow:inset 3px 0 0 var(--emerald)}
 let allData = [];
 (function decodeData(){
   if(typeof RAW_DATA==='undefined'){showToast('Data file not found. Ensure advisor-data.js is in the same folder.','info');return}
-  const {F,S,C,R} = RAW_DATA;
-  // R = [[advisorName, teamName, firmIdx, stateIdx, cityIdx, stateRank, category, teamAssets], ...]
-  allData = R.map((r,i)=>({
+  const {P,L,F,S,C,R} = RAW_DATA;
+  // R = [[name, teamName, firmIdx, stateIdx, cityIdx, rank, category, teamAssets, minAccount, typicalNetWorth, typicalHousehold, pubIdx, listIdx, clientTypes], ...]
+  allData = R.map(function(r,i){return{
     id:i,
     advisorName: r[0],
     teamName: r[1],
@@ -276,11 +277,17 @@ let allData = [];
     stateRank: r[5]||'',
     category: r[6]||'',
     teamAssets: r[7]||'',
+    minAccount: r[8]||'',
+    typicalNetWorth: r[9]||'',
+    typicalHousehold: r[10]||'',
+    publication: P[r[11]]||'',
+    list: L[r[12]]||'',
+    clientTypes: r[13]||'',
     matched: false
-  }));
+  }});
 })();
 
-let filteredData = [...allData];
+let filteredData = allData.slice();
 let uploadedNames = [];
 let currentPage = 1;
 const pageSize = 100;
@@ -288,45 +295,81 @@ let sortCol = '';
 let sortDir = 'asc';
 let matchOnly = false;
 
+const pubClassMap = {"Forbes/SHOOK":"pub-forbes","Barron's":"pub-barrons","AdvisorHub":"pub-advisorhub","InvestmentNews":"pub-investmentnews"};
+
 // ========== INIT ==========
 function init(){
   populateFilters();
   updateStats();
   renderTable();
   document.getElementById('searchInput').addEventListener('input', debounce(applyFilters,250));
+  document.getElementById('pubFilter').addEventListener('change', function(){updateListFilter();applyFilters()});
+  document.getElementById('listFilter').addEventListener('change', applyFilters);
   document.getElementById('firmFilter').addEventListener('change', applyFilters);
   document.getElementById('stateFilter').addEventListener('change', applyFilters);
   document.getElementById('csvUpload').addEventListener('change', handleCSVUpload);
-  document.querySelectorAll('thead th').forEach(th=>{
-    th.addEventListener('click',()=>handleSort(th.dataset.col));
+  document.querySelectorAll('thead th').forEach(function(th){
+    th.addEventListener('click',function(){handleSort(th.dataset.col)});
   });
-  // Hide loading
-  setTimeout(()=>document.getElementById('loadingOverlay').classList.add('hidden'),300);
+  setTimeout(function(){document.getElementById('loadingOverlay').classList.add('hidden')},300);
 }
 
-function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}}
+function debounce(fn,ms){var t;return function(){var a=arguments;clearTimeout(t);t=setTimeout(function(){fn.apply(null,a)},ms)}}
 
 // ========== FILTERS ==========
 function populateFilters(){
-  const firms = [...new Set(allData.map(d=>d.firm).filter(Boolean))].sort();
-  const states = [...new Set(allData.map(d=>d.state).filter(Boolean))].sort();
-  const firmSel = document.getElementById('firmFilter');
-  const stateSel = document.getElementById('stateFilter');
-  firms.forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f;firmSel.appendChild(o)});
-  states.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;stateSel.appendChild(o)});
+  var pubs = [];
+  var firms = [];
+  var states = [];
+  allData.forEach(function(d){
+    if(d.publication && pubs.indexOf(d.publication)===-1) pubs.push(d.publication);
+    if(d.firm && firms.indexOf(d.firm)===-1) firms.push(d.firm);
+    if(d.state && states.indexOf(d.state)===-1) states.push(d.state);
+  });
+  pubs.sort(); firms.sort(); states.sort();
+
+  var pubSel = document.getElementById('pubFilter');
+  pubs.forEach(function(p){var o=document.createElement('option');o.value=p;o.textContent=p;pubSel.appendChild(o)});
+
+  var firmSel = document.getElementById('firmFilter');
+  firms.forEach(function(f){var o=document.createElement('option');o.value=f;o.textContent=f;firmSel.appendChild(o)});
+
+  var stateSel = document.getElementById('stateFilter');
+  states.forEach(function(s){var o=document.createElement('option');o.value=s;o.textContent=s;stateSel.appendChild(o)});
+
+  updateListFilter();
+}
+
+function updateListFilter(){
+  var selectedPub = document.getElementById('pubFilter').value;
+  var lists = [];
+  allData.forEach(function(d){
+    if(selectedPub && d.publication !== selectedPub) return;
+    if(d.list && lists.indexOf(d.list)===-1) lists.push(d.list);
+  });
+  lists.sort();
+  var listSel = document.getElementById('listFilter');
+  var curVal = listSel.value;
+  listSel.innerHTML = '<option value="">All Lists</option>';
+  lists.forEach(function(l){var o=document.createElement('option');o.value=l;o.textContent=l;listSel.appendChild(o)});
+  if(lists.indexOf(curVal) !== -1) listSel.value = curVal;
 }
 
 function applyFilters(){
-  const search = document.getElementById('searchInput').value.toLowerCase().trim();
-  const firm = document.getElementById('firmFilter').value;
-  const state = document.getElementById('stateFilter').value;
-  filteredData = allData.filter(d=>{
+  var search = document.getElementById('searchInput').value.toLowerCase().trim();
+  var pub = document.getElementById('pubFilter').value;
+  var list = document.getElementById('listFilter').value;
+  var firm = document.getElementById('firmFilter').value;
+  var state = document.getElementById('stateFilter').value;
+  filteredData = allData.filter(function(d){
+    if(pub && d.publication !== pub) return false;
+    if(list && d.list !== list) return false;
     if(firm && d.firm !== firm) return false;
     if(state && d.state !== state) return false;
     if(matchOnly && !d.matched) return false;
     if(search){
-      const hay = (d.advisorName+' '+d.teamName+' '+d.firm+' '+d.state+' '+d.city+' '+d.category).toLowerCase();
-      if(!hay.includes(search)) return false;
+      var hay = (d.advisorName+' '+d.teamName+' '+d.firm+' '+d.state+' '+d.city+' '+d.category+' '+d.publication+' '+d.list).toLowerCase();
+      if(hay.indexOf(search)===-1) return false;
     }
     return true;
   });
@@ -339,11 +382,11 @@ function applyFilters(){
 function handleSort(col){
   if(!col)return;
   if(sortCol===col){sortDir=sortDir==='asc'?'desc':'asc'}else{sortCol=col;sortDir='asc'}
-  document.querySelectorAll('thead th').forEach(th=>{th.classList.remove('sorted-asc','sorted-desc')});
-  const th=document.querySelector('thead th[data-col="'+col+'"]');
+  document.querySelectorAll('thead th').forEach(function(th){th.classList.remove('sorted-asc','sorted-desc')});
+  var th=document.querySelector('thead th[data-col="'+col+'"]');
   if(th)th.classList.add(sortDir==='asc'?'sorted-asc':'sorted-desc');
-  filteredData.sort((a,b)=>{
-    let va=a[col]||'',vb=b[col]||'';
+  filteredData.sort(function(a,b){
+    var va=a[col]||'',vb=b[col]||'';
     if(col==='matched'){va=a.matched?1:0;vb=b.matched?1:0}
     if(col==='stateRank'){va=parseInt(va)||9999;vb=parseInt(vb)||9999}
     if(typeof va==='string'){va=va.toLowerCase();vb=vb.toLowerCase()}
@@ -356,17 +399,19 @@ function handleSort(col){
 
 // ========== RENDER ==========
 function renderTable(){
-  const tbody=document.getElementById('tableBody');
-  const start=(currentPage-1)*pageSize;
-  const page=filteredData.slice(start,start+pageSize);
+  var tbody=document.getElementById('tableBody');
+  var start=(currentPage-1)*pageSize;
+  var page=filteredData.slice(start,start+pageSize);
   document.getElementById('showingCount').textContent=filteredData.length.toLocaleString();
   document.getElementById('totalCount').textContent=allData.length.toLocaleString();
   if(page.length===0){
-    tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><p>No records match your current filters.</p></div></td></tr>';
+    tbody.innerHTML='<tr><td colspan="12"><div class="empty-state"><p>No records match your current filters.</p></div></td></tr>';
     document.getElementById('pagination').innerHTML='';
     return;
   }
-  tbody.innerHTML=page.map(d=>'<tr class="'+(d.matched?'matched':'')+'">'
+  tbody.innerHTML=page.map(function(d){
+    var pubClass=pubClassMap[d.publication]||'pub-forbes';
+    return '<tr class="'+(d.matched?'matched':'')+'">'
     +'<td>'+(d.matched?'<span class="match-badge">Match</span>':'<span class="no-match">\u2014</span>')+'</td>'
     +'<td class="cell-name">'+esc(d.advisorName)+'</td>'
     +'<td class="cell-team">'+esc(d.teamName)+'</td>'
@@ -374,18 +419,22 @@ function renderTable(){
     +'<td class="cell-state">'+esc(d.state)+'</td>'
     +'<td>'+esc(d.city)+'</td>'
     +'<td class="cell-rank">'+(d.stateRank?'#'+d.stateRank:'')+'</td>'
-    +'<td style="font-size:11px;color:var(--slate-500)">'+esc(d.category)+'</td>'
     +'<td class="cell-assets">'+esc(d.teamAssets)+'</td>'
-    +'</tr>').join('');
+    +'<td class="cell-assets">'+esc(d.minAccount)+'</td>'
+    +'<td class="cell-assets">'+esc(d.typicalNetWorth)+'</td>'
+    +'<td><span class="pub-badge '+pubClass+'">'+esc(d.publication)+'</span></td>'
+    +'<td style="font-size:11px;color:var(--slate-500)">'+esc(d.list)+'</td>'
+    +'</tr>'
+  }).join('');
   renderPagination();
 }
 
 function renderPagination(){
-  const total=Math.ceil(filteredData.length/pageSize);
+  var total=Math.ceil(filteredData.length/pageSize);
   if(total<=1){document.getElementById('pagination').innerHTML='';return}
-  let html='<button '+(currentPage===1?'disabled':'')+' onclick="goPage('+(currentPage-1)+')">\u25C0</button>';
-  const range=getPageRange(currentPage,total);
-  range.forEach(p=>{
+  var html='<button '+(currentPage===1?'disabled':'')+' onclick="goPage('+(currentPage-1)+')">\u25C0</button>';
+  var range=getPageRange(currentPage,total);
+  range.forEach(function(p){
     if(p==='...')html+='<button disabled style="border:none;background:none;color:var(--slate-600)">\u2026</button>';
     else html+='<button class="'+(p===currentPage?'active':'')+'" onclick="goPage('+p+')">'+p+'</button>';
   });
@@ -394,53 +443,69 @@ function renderPagination(){
 }
 
 function getPageRange(cur,total){
-  if(total<=9)return Array.from({length:total},(_,i)=>i+1);
+  if(total<=9){var arr=[];for(var i=1;i<=total;i++)arr.push(i);return arr}
   if(cur<=4)return[1,2,3,4,5,'...',total];
   if(cur>=total-3)return[1,'...',total-4,total-3,total-2,total-1,total];
   return[1,'...',cur-1,cur,cur+1,'...',total];
 }
 
 function goPage(p){currentPage=p;renderTable();document.getElementById('tableScroll').scrollTop=0}
-function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=String(s);return d.innerHTML}
+function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=String(s);return d.innerHTML}
 
 // ========== STATS ==========
 function updateStats(){
   document.getElementById('statTotal').textContent=allData.length.toLocaleString();
-  document.getElementById('statTeams').textContent=new Set(allData.map(d=>d.teamName+'\x00'+d.firm)).size.toLocaleString();
-  document.getElementById('statStates').textContent=new Set(allData.map(d=>d.state).filter(Boolean)).size;
-  document.getElementById('statFirms').textContent=new Set(allData.map(d=>d.firm).filter(Boolean)).size;
-  document.getElementById('statMatches').textContent=allData.filter(d=>d.matched).length.toLocaleString();
+  var pubs={},lists={},states={},firms={};
+  allData.forEach(function(d){
+    if(d.publication)pubs[d.publication]=1;
+    if(d.list)lists[d.list]=1;
+    if(d.state)states[d.state]=1;
+    if(d.firm)firms[d.firm]=1;
+  });
+  document.getElementById('statPubs').textContent=Object.keys(pubs).length;
+  document.getElementById('statLists').textContent=Object.keys(lists).length;
+  document.getElementById('statStates').textContent=Object.keys(states).length;
+  document.getElementById('statFirms').textContent=Object.keys(firms).length;
+  document.getElementById('statMatches').textContent=allData.filter(function(d){return d.matched}).length.toLocaleString();
   document.getElementById('statFiltered').textContent=filteredData.length.toLocaleString();
 }
 
 // ========== CSV UPLOAD & MATCHING ==========
 function handleCSVUpload(e){
-  const file=e.target.files[0];
+  var file=e.target.files[0];
   if(!file)return;
-  const reader=new FileReader();
+  var reader=new FileReader();
   reader.onload=function(ev){
-    const text=ev.target.result;
-    const lines=text.split(/\r?\n/).filter(l=>l.trim());
+    var text=ev.target.result;
+    var lines=text.split(/\r?\n/).filter(function(l){return l.trim()});
     if(lines.length<2){showToast('CSV must have a header row and at least one data row.','info');return}
-    const headers=parseCSVLine(lines[0]).map(h=>h.toLowerCase().trim());
-    let nameIdx=headers.findIndex(h=>h==='name'||h==='advisor'||h==='advisor name'||h==='advisorname'||h==='full name'||h==='fullname'||h==='rep name'||h==='rep');
-    if(nameIdx===-1)nameIdx=headers.findIndex(h=>h.includes('name')||h.includes('advisor'));
-    if(nameIdx===-1){showToast('Could not find a Name or Advisor column. Please ensure one exists.','info');return}
+    var headers=parseCSVLine(lines[0]).map(function(h){return h.toLowerCase().trim()});
+    var nameIdx=headers.indexOf('name');
+    if(nameIdx===-1) nameIdx=headers.indexOf('advisor');
+    if(nameIdx===-1) nameIdx=headers.indexOf('advisor name');
+    if(nameIdx===-1) nameIdx=headers.indexOf('full name');
+    if(nameIdx===-1) nameIdx=headers.indexOf('rep name');
+    if(nameIdx===-1){
+      for(var k=0;k<headers.length;k++){
+        if(headers[k].indexOf('name')!==-1||headers[k].indexOf('advisor')!==-1){nameIdx=k;break}
+      }
+    }
+    if(nameIdx===-1){showToast('Could not find a Name or Advisor column.','info');return}
     uploadedNames=[];
-    for(let i=1;i<lines.length;i++){
-      const cols=parseCSVLine(lines[i]);
+    for(var i=1;i<lines.length;i++){
+      var cols=parseCSVLine(lines[i]);
       if(cols[nameIdx]&&cols[nameIdx].trim())uploadedNames.push(cols[nameIdx].trim());
     }
     runMatching();
-    showToast('Uploaded '+uploadedNames.length+' names. Found '+allData.filter(d=>d.matched).length+' potential matches.','success');
+    showToast('Uploaded '+uploadedNames.length+' names. Found '+allData.filter(function(d){return d.matched}).length+' potential matches.','success');
   };
   reader.readAsText(file);
 }
 
 function parseCSVLine(line){
-  const result=[];let cur='';let inQ=false;
-  for(let i=0;i<line.length;i++){
-    const c=line[i];
+  var result=[];var cur='';var inQ=false;
+  for(var i=0;i<line.length;i++){
+    var c=line[i];
     if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++}else inQ=!inQ}
     else if(c===','&&!inQ){result.push(cur);cur=''}
     else cur+=c;
@@ -449,28 +514,25 @@ function parseCSVLine(line){
 }
 
 function runMatching(){
-  // Build sets of last names and full names from uploaded list
-  const uploadedLastNames=new Set();
-  const uploadedFulls=new Set();
-  uploadedNames.forEach(n=>{
-    uploadedFulls.add(n.toLowerCase().trim());
-    const parts=n.trim().split(/\s+/);
-    const ln=parts[parts.length-1].toLowerCase().replace(/[^a-z]/g,'');
-    if(ln.length>=3)uploadedLastNames.add(ln);
+  var uploadedLastNames={};
+  var uploadedFulls={};
+  uploadedNames.forEach(function(n){
+    uploadedFulls[n.toLowerCase().trim()]=1;
+    var parts=n.trim().split(/\s+/);
+    var ln=parts[parts.length-1].toLowerCase().replace(/[^a-z]/g,'');
+    if(ln.length>=3)uploadedLastNames[ln]=1;
   });
 
-  allData.forEach(d=>{
+  allData.forEach(function(d){
     d.matched=false;
-    const advLow=d.advisorName.toLowerCase();
-    // Full name match
-    for(const full of uploadedFulls){
-      if(advLow===full||advLow.includes(full)||full.includes(advLow)){d.matched=true;break}
+    var advLow=d.advisorName.toLowerCase();
+    for(var full in uploadedFulls){
+      if(advLow===full||advLow.indexOf(full)!==-1||full.indexOf(advLow)!==-1){d.matched=true;break}
     }
-    // Last name word-boundary match
     if(!d.matched){
-      for(const ln of uploadedLastNames){
+      for(var ln in uploadedLastNames){
         try{
-          const re=new RegExp('\\b'+ln.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i');
+          var re=new RegExp('\\b'+ln.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i');
           if(re.test(d.advisorName)){d.matched=true;break}
         }catch(e){}
       }
@@ -479,14 +541,14 @@ function runMatching(){
   updateStats();
   applyFilters();
   document.getElementById('clearMatchBtn').style.display='inline-flex';
-  const mc=document.getElementById('matchCount');
+  var mc=document.getElementById('matchCount');
   mc.classList.add('visible');
-  document.getElementById('matchCountText').textContent=allData.filter(d=>d.matched).length.toLocaleString()+' matches';
+  document.getElementById('matchCountText').textContent=allData.filter(function(d){return d.matched}).length.toLocaleString()+' matches';
 }
 
 function clearMatches(){
   uploadedNames=[];
-  allData.forEach(d=>d.matched=false);
+  allData.forEach(function(d){d.matched=false});
   updateStats();applyFilters();
   document.getElementById('clearMatchBtn').style.display='none';
   document.getElementById('matchCount').classList.remove('visible');
@@ -503,8 +565,8 @@ function toggleMatchFilter(){
 
 // ========== EXPORT ==========
 function exportCSV(){
-  const headers=['Match','Advisor Name','Team','Firm','State','City','State Rank','Category','Team Assets'];
-  const rows=filteredData.map(d=>[
+  var headers=['Match','Advisor Name','Team','Firm','State','City','Rank','Team Assets','Min Account','Typical Net Worth','Typical Household','Publication','Award List','Client Types'];
+  var rows=filteredData.map(function(d){return[
     d.matched?'Yes':'No',
     '"'+(d.advisorName||'').replace(/"/g,'""')+'"',
     '"'+(d.teamName||'').replace(/"/g,'""')+'"',
@@ -512,23 +574,28 @@ function exportCSV(){
     '"'+(d.state||'').replace(/"/g,'""')+'"',
     '"'+(d.city||'').replace(/"/g,'""')+'"',
     d.stateRank||'',
-    '"'+(d.category||'').replace(/"/g,'""')+'"',
-    '"'+(d.teamAssets||'').replace(/"/g,'""')+'"'
-  ].join(','));
-  const csv='\uFEFF'+[headers.join(','),...rows].join('\n');
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='advisor-recognition-export.csv';
+    '"'+(d.teamAssets||'').replace(/"/g,'""')+'"',
+    '"'+(d.minAccount||'').replace(/"/g,'""')+'"',
+    '"'+(d.typicalNetWorth||'').replace(/"/g,'""')+'"',
+    '"'+(d.typicalHousehold||'').replace(/"/g,'""')+'"',
+    '"'+(d.publication||'').replace(/"/g,'""')+'"',
+    '"'+(d.list||'').replace(/"/g,'""')+'"',
+    '"'+(d.clientTypes||'').replace(/"/g,'""')+'"'
+  ].join(',')});
+  var csv='\uFEFF'+[headers.join(',')].concat(rows).join('\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='advisor-recognition-export.csv';
   document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
   showToast('Exported '+filteredData.length.toLocaleString()+' records.','success');
 }
 
 // ========== TOAST ==========
 function showToast(msg,type){
-  const t=document.getElementById('toast');
+  var t=document.getElementById('toast');
   t.textContent=msg;t.className='toast '+type;
-  setTimeout(()=>t.classList.add('show'),10);
-  setTimeout(()=>t.classList.remove('show'),3500);
+  setTimeout(function(){t.classList.add('show')},10);
+  setTimeout(function(){t.classList.remove('show')},3500);
 }
 
 // GO
