@@ -108,7 +108,12 @@ tbody td{padding:9px 14px;color:var(--slate-300);vertical-align:middle}
 tr.matched{background:rgba(52,211,153,0.04) !important}
 tr.matched td:first-child{box-shadow:inset 3px 0 0 var(--emerald)}
 .match-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);border-radius:100px;font-size:10px;font-weight:600;color:var(--emerald);letter-spacing:0.5px;text-transform:uppercase}
+.new-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.25);border-radius:100px;font-size:10px;font-weight:700;color:var(--amber);letter-spacing:0.5px;text-transform:uppercase;animation:newPulse 2s ease-in-out infinite}
+@keyframes newPulse{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0)}50%{box-shadow:0 0 8px 2px rgba(251,191,36,0.15)}}
+tr.is-new td:first-child{box-shadow:inset 3px 0 0 var(--amber)}
 .no-match{color:var(--slate-600);font-size:11px}
+.linkedin-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:4px;background:rgba(10,102,194,0.12);border:1px solid rgba(10,102,194,0.2);color:#7eb8e6;cursor:pointer;transition:all 0.2s;text-decoration:none;font-size:11px;font-weight:700}
+.linkedin-btn:hover{background:rgba(10,102,194,0.25);border-color:rgba(10,102,194,0.4);color:#a3d0f0;transform:translateY(-1px)}
 .pagination{display:flex;justify-content:center;align-items:center;gap:4px;padding:16px}
 .pagination button{width:36px;height:36px;border-radius:var(--radius);border:1px solid var(--glass-border);background:transparent;color:var(--slate-400);font-size:13px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center}
 .pagination button:hover{background:var(--navy-700);color:var(--slate-200)}
@@ -171,6 +176,7 @@ tr.matched td:first-child{box-shadow:inset 3px 0 0 var(--emerald)}
     <div class="stat-card"><div class="stat-label">Award Lists</div><div class="stat-value" id="statLists">-</div><div class="stat-detail">Rankings tracked</div></div>
     <div class="stat-card"><div class="stat-label">States</div><div class="stat-value" id="statStates">-</div><div class="stat-detail">Coverage</div></div>
     <div class="stat-card"><div class="stat-label">Firms</div><div class="stat-value" id="statFirms">-</div><div class="stat-detail">Companies represented</div></div>
+    <div class="stat-card"><div class="stat-label">New Entrants</div><div class="stat-value" id="statNew" style="color:var(--amber)">-</div><div class="stat-detail">First time on list</div></div>
     <div class="stat-card"><div class="stat-label">Matches</div><div class="stat-value" id="statMatches">0</div><div class="stat-detail">Against uploaded list</div></div>
     <div class="stat-card"><div class="stat-label">Filtered</div><div class="stat-value" id="statFiltered">-</div><div class="stat-detail">Currently showing</div></div>
   </div>
@@ -213,8 +219,9 @@ tr.matched td:first-child{box-shadow:inset 3px 0 0 var(--emerald)}
         <label class="control-label">State</label>
         <select class="control-select" id="stateFilter"><option value="">All States</option></select>
       </div>
-      <div class="control-group" style="flex:0.5;display:flex;flex-direction:column;justify-content:flex-end;gap:6px">
+      <div class="control-group" style="flex:0.8;display:flex;flex-direction:column;justify-content:flex-end;gap:6px">
         <div class="filter-toggle">
+          <button class="toggle-btn" id="newOnlyBtn" onclick="toggleNewFilter()" style="border-color:rgba(251,191,36,0.2);color:var(--slate-400)">New Entrants</button>
           <button class="toggle-btn" id="matchOnlyBtn" onclick="toggleMatchFilter()">Matches Only</button>
         </div>
       </div>
@@ -233,6 +240,7 @@ tr.matched td:first-child{box-shadow:inset 3px 0 0 var(--emerald)}
         <thead>
           <tr>
             <th data-col="matched" style="width:70px">Match</th>
+            <th data-col="isNew" style="width:60px">Status</th>
             <th data-col="advisorName">Advisor Name</th>
             <th data-col="teamName">Team</th>
             <th data-col="firm">Firm</th>
@@ -244,6 +252,7 @@ tr.matched td:first-child{box-shadow:inset 3px 0 0 var(--emerald)}
             <th data-col="typicalNetWorth">Typical Net Worth</th>
             <th data-col="publication">Publication</th>
             <th data-col="list">Award List</th>
+            <th style="width:32px">LI</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -266,7 +275,7 @@ let allData = [];
 (function decodeData(){
   if(typeof RAW_DATA==='undefined'){showToast('Data file not found. Ensure advisor-data.js is in the same folder.','info');return}
   const {P,L,F,S,C,R} = RAW_DATA;
-  // R = [[name, teamName, firmIdx, stateIdx, cityIdx, rank, category, teamAssets, minAccount, typicalNetWorth, typicalHousehold, pubIdx, listIdx, clientTypes], ...]
+  // R = [[name, teamName, firmIdx, stateIdx, cityIdx, rank, category, teamAssets, minAccount, typicalNetWorth, typicalHousehold, pubIdx, listIdx, clientTypes, isNew], ...]
   allData = R.map(function(r,i){return{
     id:i,
     advisorName: r[0],
@@ -283,6 +292,7 @@ let allData = [];
     publication: P[r[11]]||'',
     list: L[r[12]]||'',
     clientTypes: r[13]||'',
+    isNew: r[14]||0,
     matched: false
   }});
 })();
@@ -294,6 +304,7 @@ const pageSize = 100;
 let sortCol = '';
 let sortDir = 'asc';
 let matchOnly = false;
+let newOnly = false;
 
 const pubClassMap = {"Forbes/SHOOK":"pub-forbes","Barron's":"pub-barrons","AdvisorHub":"pub-advisorhub","InvestmentNews":"pub-investmentnews"};
 
@@ -367,6 +378,7 @@ function applyFilters(){
     if(firm && d.firm !== firm) return false;
     if(state && d.state !== state) return false;
     if(matchOnly && !d.matched) return false;
+    if(newOnly && !d.isNew) return false;
     if(search){
       var hay = (d.advisorName+' '+d.teamName+' '+d.firm+' '+d.state+' '+d.city+' '+d.category+' '+d.publication+' '+d.list).toLowerCase();
       if(hay.indexOf(search)===-1) return false;
@@ -388,6 +400,7 @@ function handleSort(col){
   filteredData.sort(function(a,b){
     var va=a[col]||'',vb=b[col]||'';
     if(col==='matched'){va=a.matched?1:0;vb=b.matched?1:0}
+    if(col==='isNew'){va=a.isNew?1:0;vb=b.isNew?1:0}
     if(col==='stateRank'){va=parseInt(va)||9999;vb=parseInt(vb)||9999}
     if(typeof va==='string'){va=va.toLowerCase();vb=vb.toLowerCase()}
     if(va<vb)return sortDir==='asc'?-1:1;
@@ -405,14 +418,17 @@ function renderTable(){
   document.getElementById('showingCount').textContent=filteredData.length.toLocaleString();
   document.getElementById('totalCount').textContent=allData.length.toLocaleString();
   if(page.length===0){
-    tbody.innerHTML='<tr><td colspan="12"><div class="empty-state"><p>No records match your current filters.</p></div></td></tr>';
+    tbody.innerHTML='<tr><td colspan="14"><div class="empty-state"><p>No records match your current filters.</p></div></td></tr>';
     document.getElementById('pagination').innerHTML='';
     return;
   }
   tbody.innerHTML=page.map(function(d){
     var pubClass=pubClassMap[d.publication]||'pub-forbes';
-    return '<tr class="'+(d.matched?'matched':'')+'">'
+    var rowClass=(d.matched?'matched':'')+(d.isNew?' is-new':'');
+    var liUrl='https://www.linkedin.com/search/results/people/?keywords='+encodeURIComponent(d.advisorName+(d.firm?' '+d.firm:''));
+    return '<tr class="'+rowClass+'">'
     +'<td>'+(d.matched?'<span class="match-badge">Match</span>':'<span class="no-match">\u2014</span>')+'</td>'
+    +'<td>'+(d.isNew?'<span class="new-badge">New</span>':'')+'</td>'
     +'<td class="cell-name">'+esc(d.advisorName)+'</td>'
     +'<td class="cell-team">'+esc(d.teamName)+'</td>'
     +'<td class="cell-firm">'+esc(d.firm)+'</td>'
@@ -424,6 +440,7 @@ function renderTable(){
     +'<td class="cell-assets">'+esc(d.typicalNetWorth)+'</td>'
     +'<td><span class="pub-badge '+pubClass+'">'+esc(d.publication)+'</span></td>'
     +'<td style="font-size:11px;color:var(--slate-500)">'+esc(d.list)+'</td>'
+    +'<td><a class="linkedin-btn" href="'+liUrl+'" target="_blank" rel="noopener" title="Search LinkedIn">in</a></td>'
     +'</tr>'
   }).join('');
   renderPagination();
@@ -466,6 +483,7 @@ function updateStats(){
   document.getElementById('statLists').textContent=Object.keys(lists).length;
   document.getElementById('statStates').textContent=Object.keys(states).length;
   document.getElementById('statFirms').textContent=Object.keys(firms).length;
+  document.getElementById('statNew').textContent=allData.filter(function(d){return d.isNew}).length.toLocaleString();
   document.getElementById('statMatches').textContent=allData.filter(function(d){return d.matched}).length.toLocaleString();
   document.getElementById('statFiltered').textContent=filteredData.length.toLocaleString();
 }
@@ -563,11 +581,21 @@ function toggleMatchFilter(){
   applyFilters();
 }
 
+function toggleNewFilter(){
+  newOnly=!newOnly;
+  var btn=document.getElementById('newOnlyBtn');
+  btn.classList.toggle('active',newOnly);
+  if(newOnly){btn.style.borderColor='rgba(251,191,36,0.4)';btn.style.background='rgba(251,191,36,0.1)';btn.style.color='var(--amber)'}
+  else{btn.style.borderColor='rgba(251,191,36,0.2)';btn.style.background='transparent';btn.style.color='var(--slate-400)'}
+  applyFilters();
+}
+
 // ========== EXPORT ==========
 function exportCSV(){
-  var headers=['Match','Advisor Name','Team','Firm','State','City','Rank','Team Assets','Min Account','Typical Net Worth','Typical Household','Publication','Award List','Client Types'];
+  var headers=['Match','New Entrant','Advisor Name','Team','Firm','State','City','Rank','Team Assets','Min Account','Typical Net Worth','Typical Household','Publication','Award List','Client Types','LinkedIn Search'];
   var rows=filteredData.map(function(d){return[
     d.matched?'Yes':'No',
+    d.isNew?'Yes':'No',
     '"'+(d.advisorName||'').replace(/"/g,'""')+'"',
     '"'+(d.teamName||'').replace(/"/g,'""')+'"',
     '"'+(d.firm||'').replace(/"/g,'""')+'"',
@@ -580,7 +608,8 @@ function exportCSV(){
     '"'+(d.typicalHousehold||'').replace(/"/g,'""')+'"',
     '"'+(d.publication||'').replace(/"/g,'""')+'"',
     '"'+(d.list||'').replace(/"/g,'""')+'"',
-    '"'+(d.clientTypes||'').replace(/"/g,'""')+'"'
+    '"'+(d.clientTypes||'').replace(/"/g,'""')+'"',
+    '"https://www.linkedin.com/search/results/people/?keywords='+encodeURIComponent(d.advisorName+(d.firm?' '+d.firm:''))+'"'
   ].join(',')});
   var csv='\uFEFF'+[headers.join(',')].concat(rows).join('\n');
   var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});

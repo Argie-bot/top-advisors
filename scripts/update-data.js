@@ -568,7 +568,30 @@ async function fetchInvestmentNews() {
 // COMBINE & OUTPUT
 // ============================================================
 
-function buildOutput(allRecords) {
+function buildOutput(allRecords, previousNames) {
+  console.log('\n=== YEAR-OVER-YEAR COMPARISON ===');
+
+  // Flag new entrants: names in current data that weren't in previous data for the same publication
+  let newCount = 0;
+  allRecords.forEach(function(r) {
+    const prevSet = previousNames[r.publication];
+    if (!prevSet || prevSet.size === 0) {
+      // No previous data for this publication — don't mark anyone as new
+      r.isNew = 0;
+    } else {
+      const nameKey = r.name.toLowerCase().trim();
+      r.isNew = prevSet.has(nameKey) ? 0 : 1;
+      if (r.isNew) newCount++;
+    }
+  });
+  console.log('  New entrants: ' + newCount + ' (across all publications)');
+  Object.keys(previousNames).forEach(function(pub) {
+    const prevCount = previousNames[pub].size;
+    const curCount = allRecords.filter(function(r) { return r.publication === pub; }).length;
+    const pubNew = allRecords.filter(function(r) { return r.publication === pub && r.isNew; }).length;
+    console.log('    ' + pub + ': ' + curCount + ' current, ' + prevCount + ' previous, ' + pubNew + ' new');
+  });
+
   console.log('\n=== BUILDING OUTPUT ===');
 
   // Build compact indexed format
@@ -578,7 +601,7 @@ function buildOutput(allRecords) {
   const states = [...new Set(allRecords.map(function(r) { return r.state; }))].sort();
   const cities = [...new Set(allRecords.map(function(r) { return r.city; }))].sort();
 
-  // Row format: [name, teamName, firmIdx, stateIdx, cityIdx, rank, category, teamAssets, minAccount, typicalNetWorth, typicalHousehold, pubIdx, listIdx, clientTypes]
+  // Row format: [name, teamName, firmIdx, stateIdx, cityIdx, rank, category, teamAssets, minAccount, typicalNetWorth, typicalHousehold, pubIdx, listIdx, clientTypes, isNew]
   const rows = allRecords.map(function(r) {
     return [
       r.name,
@@ -594,7 +617,8 @@ function buildOutput(allRecords) {
       r.typicalHousehold || '',
       publications.indexOf(r.publication),
       lists.indexOf(r.list),
-      r.clientTypes || ''
+      r.clientTypes || '',
+      r.isNew || 0
     ];
   });
 
@@ -607,6 +631,7 @@ function buildOutput(allRecords) {
   console.log('  States: ' + states.length);
   console.log('  Cities: ' + cities.length);
   console.log('  Total records: ' + rows.length);
+  console.log('  New entrants: ' + newCount);
   console.log('  File size: ' + (jsContent.length / 1024 / 1024).toFixed(2) + ' MB');
 
   if (!DRY_RUN) {
@@ -617,7 +642,7 @@ function buildOutput(allRecords) {
     console.log('  [DRY RUN] Would save to: ' + path.join(OUT_DIR, 'advisor-data.js'));
   }
 
-  return { publications: publications.length, lists: lists.length, records: rows.length };
+  return { publications: publications.length, lists: lists.length, records: rows.length, newEntrants: newCount };
 }
 
 // ============================================================
@@ -637,14 +662,26 @@ async function main() {
 
   // Load existing data as fallback (used when a source is not being refreshed,
   // or when a fresh fetch returns 0 records to prevent data loss)
+  // Also used for year-over-year comparison to identify new entrants
   const existingPath = path.join(OUT_DIR, 'advisor-data.js');
   let existingData = null;
+  let previousNames = {}; // { publication: Set(lowercase names) }
   if (fs.existsSync(existingPath)) {
     try {
       const js = fs.readFileSync(existingPath, 'utf8');
       const jsonStr = js.replace(/^const RAW_DATA=/, '').replace(/;$/, '');
       existingData = JSON.parse(jsonStr);
       console.log('\nLoaded existing data: ' + existingData.R.length + ' records');
+
+      // Extract names per publication for YoY comparison
+      existingData.R.forEach(function(r) {
+        const pub = existingData.P[r[11]] || '';
+        if (!pub) return;
+        if (!previousNames[pub]) previousNames[pub] = new Set();
+        previousNames[pub].add((r[0] || '').toLowerCase().trim());
+      });
+      const prevPubs = Object.keys(previousNames);
+      console.log('  Previous names loaded for: ' + prevPubs.map(function(p) { return p + ' (' + previousNames[p].size + ')'; }).join(', '));
     } catch(e) {
       console.warn('Could not load existing data: ' + e.message);
     }
@@ -703,12 +740,13 @@ async function main() {
     process.exit(1);
   }
 
-  const result = buildOutput(allRecords);
+  const result = buildOutput(allRecords, previousNames);
 
   console.log('\n=== SUMMARY ===');
   console.log('Publications: ' + result.publications);
   console.log('Lists: ' + result.lists);
   console.log('Total records: ' + result.records);
+  console.log('New entrants: ' + result.newEntrants);
   console.log('Done!');
 }
 
