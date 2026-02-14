@@ -312,6 +312,12 @@ async function fetchForbes() {
 // 2. BARRON'S
 // ============================================================
 
+// Strip HTML tags, returning just the text content
+function stripHTML(s) {
+  if (!s) return '';
+  return s.replace(/<[^>]+>/g, '').trim();
+}
+
 function parseBarronsIndividual(html, listName) {
   const regex = /"data":\[(\{"20\d{2} Rank".*?\})\]/g;
   let records = [];
@@ -325,11 +331,11 @@ function parseBarronsIndividual(html, listName) {
         const nameMatch = nameField.match(/>([^<]+)</) ;
         const rankKey = Object.keys(r).find(function(k) { return k.match(/^\d{4} Rank$/); });
         records.push({
-          name: nameMatch ? nameMatch[1] : nameField.replace(/<[^>]+>/g, '').trim(),
+          name: nameMatch ? nameMatch[1] : stripHTML(nameField),
           teamName: '',
-          firm: r.Firm || '',
-          state: expandState(r.State || ''),
-          city: r.City || '',
+          firm: stripHTML(r.Firm || ''),
+          state: expandState(stripHTML(r.State || '')),
+          city: stripHTML(r.City || ''),
           rank: rankKey ? r[rankKey] : '',
           category: '',
           teamAssets: r['Team Assets\n($mil)'] ? '$' + r['Team Assets\n($mil)'] + 'M' : '',
@@ -354,12 +360,12 @@ function parseBarronsTeams(html, listName) {
     try {
       const arr = JSON.parse('[' + m[1] + ']');
       arr.forEach(function(r) {
-        const teamName = r.Team || '';
-        const location = r.Location || '';
+        const teamName = stripHTML(r.Team || '');
+        const location = stripHTML(r.Location || '');
         const locParts = location.split(', ');
         const city = locParts[0] || '';
         const state = expandState(locParts.slice(1).join(', '));
-        const keyAdvisors = r['Key Advisor(s)'] || '';
+        const keyAdvisors = stripHTML(r['Key Advisor(s)'] || '');
         const teamAssetsBil = r['Team Assets ($bil)'] || '';
         const rankKey = Object.keys(r).find(function(k) { return k.match(/^\d{4} Rank$/); });
         const rank = rankKey ? r[rankKey] : '';
@@ -369,7 +375,7 @@ function parseBarronsTeams(html, listName) {
           records.push({
             name: advisor,
             teamName: teamName,
-            firm: r.Firm || '',
+            firm: stripHTML(r.Firm || ''),
             state: state, city: city,
             rank: rank, category: '',
             teamAssets: teamAssetsBil ? '$' + teamAssetsBil + 'B' : '',
