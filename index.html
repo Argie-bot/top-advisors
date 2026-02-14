@@ -114,6 +114,14 @@ tr.is-new td:first-child{box-shadow:inset 3px 0 0 var(--amber)}
 .no-match{color:var(--slate-600);font-size:11px}
 .linkedin-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:4px;background:rgba(10,102,194,0.12);border:1px solid rgba(10,102,194,0.2);color:#7eb8e6;cursor:pointer;transition:all 0.2s;text-decoration:none;font-size:11px;font-weight:700}
 .linkedin-btn:hover{background:rgba(10,102,194,0.25);border-color:rgba(10,102,194,0.4);color:#a3d0f0;transform:translateY(-1px)}
+.year-selector{display:flex;align-items:center;gap:8px}
+.year-selector label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--slate-500)}
+.year-selector select{padding:6px 12px;background:var(--navy-800);border:1px solid var(--gold-400);border-radius:var(--radius);color:var(--gold-300);font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;cursor:pointer;outline:none;transition:all 0.2s}
+.year-selector select:hover{border-color:var(--gold-300);box-shadow:0 0 0 3px rgba(212,148,42,0.1)}
+.year-selector select option{background:var(--navy-800);color:var(--slate-200)}
+.year-loading{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold-400);display:none;align-items:center;gap:6px}
+.year-loading.visible{display:inline-flex}
+.year-loading .mini-spin{width:14px;height:14px;border:2px solid var(--navy-700);border-top-color:var(--gold-400);border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
 .pagination{display:flex;justify-content:center;align-items:center;gap:4px;padding:16px}
 .pagination button{width:36px;height:36px;border-radius:var(--radius);border:1px solid var(--glass-border);background:transparent;color:var(--slate-400);font-size:13px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center}
 .pagination button:hover{background:var(--navy-700);color:var(--slate-200)}
@@ -167,6 +175,11 @@ tr.is-new td:first-child{box-shadow:inset 3px 0 0 var(--amber)}
       <span class="header-badge">13 Award Lists</span>
       <span class="header-badge">21,500+ Records</span>
       <span class="header-badge">2025-2026 Data</span>
+      <div class="year-selector">
+        <label>Data Year</label>
+        <select id="yearSelector"><option value="">Latest</option></select>
+        <span class="year-loading" id="yearLoading"><span class="mini-spin"></span>Loading...</span>
+      </div>
     </div>
   </header>
 
@@ -272,11 +285,21 @@ tr.is-new td:first-child{box-shadow:inset 3px 0 0 var(--amber)}
 <script>
 // ========== DECODE COMPACT DATA ==========
 let allData = [];
-(function decodeData(){
-  if(typeof RAW_DATA==='undefined'){showToast('Data file not found. Ensure advisor-data.js is in the same folder.','info');return}
-  const {P,L,F,S,C,R} = RAW_DATA;
+let filteredData = [];
+let uploadedNames = [];
+let currentPage = 1;
+const pageSize = 100;
+let sortCol = '';
+let sortDir = 'asc';
+let matchOnly = false;
+let newOnly = false;
+
+const pubClassMap = {"Forbes/SHOOK":"pub-forbes","Barron's":"pub-barrons","AdvisorHub":"pub-advisorhub","InvestmentNews":"pub-investmentnews"};
+
+function decodeRawData(rawData){
+  var {P,L,F,S,C,R} = rawData;
   // R = [[name, teamName, firmIdx, stateIdx, cityIdx, rank, category, teamAssets, minAccount, typicalNetWorth, typicalHousehold, pubIdx, listIdx, clientTypes, isNew], ...]
-  allData = R.map(function(r,i){return{
+  return R.map(function(r,i){return{
     id:i,
     advisorName: r[0],
     teamName: r[1],
@@ -295,18 +318,95 @@ let allData = [];
     isNew: r[14]||0,
     matched: false
   }});
+}
+
+// Load initial data
+(function(){
+  if(typeof RAW_DATA==='undefined'){showToast('Data file not found. Ensure advisor-data.js is in the same folder.','info');return}
+  allData = decodeRawData(RAW_DATA);
+  filteredData = allData.slice();
 })();
 
-let filteredData = allData.slice();
-let uploadedNames = [];
-let currentPage = 1;
-const pageSize = 100;
-let sortCol = '';
-let sortDir = 'asc';
-let matchOnly = false;
-let newOnly = false;
+// ========== YEAR SWITCHING ==========
+var yearCache = {}; // { year: decoded data array }
+var availableYears = [];
 
-const pubClassMap = {"Forbes/SHOOK":"pub-forbes","Barron's":"pub-barrons","AdvisorHub":"pub-advisorhub","InvestmentNews":"pub-investmentnews"};
+function loadYearsManifest(){
+  fetch('data/years.json').then(function(r){
+    if(!r.ok) return;
+    return r.json();
+  }).then(function(manifest){
+    if(!manifest || !manifest.years) return;
+    availableYears = manifest.years;
+    var sel = document.getElementById('yearSelector');
+    availableYears.forEach(function(y){
+      var o = document.createElement('option');
+      o.value = y;
+      o.textContent = y;
+      sel.appendChild(o);
+    });
+  }).catch(function(){});
+}
+
+function switchYear(year){
+  if(!year){
+    // "Latest" selected — reload original data
+    allData = decodeRawData(RAW_DATA);
+    filteredData = allData.slice();
+    resetFiltersAndRender();
+    return;
+  }
+  // Check cache
+  if(yearCache[year]){
+    allData = yearCache[year];
+    filteredData = allData.slice();
+    resetFiltersAndRender();
+    return;
+  }
+  // Fetch the year file
+  var loader = document.getElementById('yearLoading');
+  loader.classList.add('visible');
+  fetch('data/'+year+'.js').then(function(r){
+    if(!r.ok) throw new Error('Year data not found');
+    return r.text();
+  }).then(function(text){
+    var jsonStr = text.replace(/^const RAW_DATA=/,'').replace(/;$/,'');
+    var data = JSON.parse(jsonStr);
+    var decoded = decodeRawData(data);
+    yearCache[year] = decoded;
+    allData = decoded;
+    filteredData = allData.slice();
+    resetFiltersAndRender();
+    showToast('Loaded '+year+' data: '+allData.length.toLocaleString()+' records.','success');
+  }).catch(function(e){
+    showToast('Could not load '+year+' data.','info');
+  }).finally(function(){
+    loader.classList.remove('visible');
+  });
+}
+
+function resetFiltersAndRender(){
+  uploadedNames = [];
+  allData.forEach(function(d){d.matched=false});
+  matchOnly = false;
+  newOnly = false;
+  document.getElementById('matchOnlyBtn').classList.remove('active');
+  var newBtn = document.getElementById('newOnlyBtn');
+  newBtn.classList.remove('active');
+  newBtn.style.borderColor='rgba(251,191,36,0.2)';newBtn.style.background='transparent';newBtn.style.color='var(--slate-400)';
+  document.getElementById('clearMatchBtn').style.display='none';
+  document.getElementById('matchCount').classList.remove('visible');
+  document.getElementById('searchInput').value='';
+  // Re-populate filters for new dataset
+  document.getElementById('pubFilter').innerHTML='<option value="">All Publications</option>';
+  document.getElementById('listFilter').innerHTML='<option value="">All Lists</option>';
+  document.getElementById('firmFilter').innerHTML='<option value="">All Firms</option>';
+  document.getElementById('stateFilter').innerHTML='<option value="">All States</option>';
+  populateFilters();
+  updateStats();
+  currentPage=1;
+  renderTable();
+}
 
 // ========== INIT ==========
 function init(){
@@ -319,9 +419,11 @@ function init(){
   document.getElementById('firmFilter').addEventListener('change', applyFilters);
   document.getElementById('stateFilter').addEventListener('change', applyFilters);
   document.getElementById('csvUpload').addEventListener('change', handleCSVUpload);
+  document.getElementById('yearSelector').addEventListener('change', function(){switchYear(this.value)});
   document.querySelectorAll('thead th').forEach(function(th){
     th.addEventListener('click',function(){handleSort(th.dataset.col)});
   });
+  loadYearsManifest();
   setTimeout(function(){document.getElementById('loadingOverlay').classList.add('hidden')},300);
 }
 

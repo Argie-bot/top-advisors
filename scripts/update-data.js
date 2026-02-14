@@ -635,9 +635,26 @@ function buildOutput(allRecords, previousNames) {
   console.log('  File size: ' + (jsContent.length / 1024 / 1024).toFixed(2) + ' MB');
 
   if (!DRY_RUN) {
+    // Write main data file (always "advisor-data.js" for the current/latest)
     const outPath = path.join(OUT_DIR, 'advisor-data.js');
     fs.writeFileSync(outPath, jsContent);
     console.log('  Saved to: ' + outPath);
+
+    // Archive a year-versioned copy in data/ directory
+    const dataDir = path.join(OUT_DIR, 'data');
+    ensureDir(dataDir);
+    const archivePath = path.join(dataDir, YEAR + '.js');
+    fs.writeFileSync(archivePath, jsContent);
+    console.log('  Archived to: ' + archivePath);
+
+    // Update years manifest (lists all available year files)
+    const existingYears = fs.readdirSync(dataDir)
+      .filter(function(f) { return f.match(/^\d{4}\.js$/); })
+      .map(function(f) { return parseInt(f.replace('.js', '')); })
+      .sort(function(a, b) { return b - a; }); // newest first
+    const manifest = { years: existingYears, current: parseInt(YEAR) };
+    fs.writeFileSync(path.join(dataDir, 'years.json'), JSON.stringify(manifest, null, 2));
+    console.log('  Years manifest: ' + existingYears.join(', '));
   } else {
     console.log('  [DRY RUN] Would save to: ' + path.join(OUT_DIR, 'advisor-data.js'));
   }
