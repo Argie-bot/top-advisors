@@ -403,6 +403,7 @@ function resetFiltersAndRender(){
   document.getElementById('firmFilter').innerHTML='<option value="">All Firms</option>';
   document.getElementById('stateFilter').innerHTML='<option value="">All States</option>';
   populateFilters();
+  updateCascadingFilters();
   updateStats();
   currentPage=1;
   renderTable();
@@ -414,8 +415,8 @@ function init(){
   updateStats();
   renderTable();
   document.getElementById('searchInput').addEventListener('input', debounce(applyFilters,250));
-  document.getElementById('pubFilter').addEventListener('change', function(){updateListFilter();applyFilters()});
-  document.getElementById('listFilter').addEventListener('change', applyFilters);
+  document.getElementById('pubFilter').addEventListener('change', function(){updateCascadingFilters();applyFilters()});
+  document.getElementById('listFilter').addEventListener('change', function(){updateCascadingFilters();applyFilters()});
   document.getElementById('firmFilter').addEventListener('change', applyFilters);
   document.getElementById('stateFilter').addEventListener('change', applyFilters);
   document.getElementById('csvUpload').addEventListener('change', handleCSVUpload);
@@ -450,11 +451,24 @@ function populateFilters(){
   var stateSel = document.getElementById('stateFilter');
   states.forEach(function(s){var o=document.createElement('option');o.value=s;o.textContent=s;stateSel.appendChild(o)});
 
-  updateListFilter();
+  updateCascadingFilters();
 }
 
-function updateListFilter(){
+function updateCascadingFilters(){
   var selectedPub = document.getElementById('pubFilter').value;
+  var selectedList = document.getElementById('listFilter').value;
+
+  // Compute the subset of data matching current pub + list selections
+  var subset = allData;
+  if(selectedPub || selectedList){
+    subset = allData.filter(function(d){
+      if(selectedPub && d.publication !== selectedPub) return false;
+      if(selectedList && d.list !== selectedList) return false;
+      return true;
+    });
+  }
+
+  // Update Award List dropdown (filtered by publication only)
   var lists = [];
   allData.forEach(function(d){
     if(selectedPub && d.publication !== selectedPub) return;
@@ -462,10 +476,34 @@ function updateListFilter(){
   });
   lists.sort();
   var listSel = document.getElementById('listFilter');
-  var curVal = listSel.value;
+  var curList = listSel.value;
   listSel.innerHTML = '<option value="">All Lists</option>';
   lists.forEach(function(l){var o=document.createElement('option');o.value=l;o.textContent=l;listSel.appendChild(o)});
-  if(lists.indexOf(curVal) !== -1) listSel.value = curVal;
+  if(lists.indexOf(curList) !== -1) listSel.value = curList;
+
+  // Update Firm dropdown (filtered by pub + list)
+  var firms = [];
+  subset.forEach(function(d){
+    if(d.firm && firms.indexOf(d.firm)===-1) firms.push(d.firm);
+  });
+  firms.sort();
+  var firmSel = document.getElementById('firmFilter');
+  var curFirm = firmSel.value;
+  firmSel.innerHTML = '<option value="">All Firms</option>';
+  firms.forEach(function(f){var o=document.createElement('option');o.value=f;o.textContent=f;firmSel.appendChild(o)});
+  if(firms.indexOf(curFirm) !== -1) firmSel.value = curFirm; else firmSel.value = '';
+
+  // Update State dropdown (filtered by pub + list)
+  var states = [];
+  subset.forEach(function(d){
+    if(d.state && states.indexOf(d.state)===-1) states.push(d.state);
+  });
+  states.sort();
+  var stateSel = document.getElementById('stateFilter');
+  var curState = stateSel.value;
+  stateSel.innerHTML = '<option value="">All States</option>';
+  states.forEach(function(s){var o=document.createElement('option');o.value=s;o.textContent=s;stateSel.appendChild(o)});
+  if(states.indexOf(curState) !== -1) stateSel.value = curState; else stateSel.value = '';
 }
 
 function applyFilters(){
